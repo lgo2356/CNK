@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "CNK_Remote_Controller"
