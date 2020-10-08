@@ -1,6 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="30dp"
+    tools:ignore="HardCodedText">
+
+    <TextView
+        android:id="@+id/text_button_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="버튼 명"
+        app:layout_constraintBottom_toTopOf="@id/edit_button_name"
+        app:layout_constraintEnd_toEndOf="@id/edit_button_name"
+        app:layout_constraintStart_toStartOf="@id/edit_button_name"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="방식"
+        app:layout_constraintBottom_toTopOf="@id/btn_mode"
+        app:layout_constraintEnd_toEndOf="@id/btn_mode"
+        app:layout_constraintStart_toStartOf="@id/btn_mode"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_button_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1번"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@id/edit_button_name"
+        app:layout_constraintEnd_toStartOf="@id/edit_button_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/edit_button_name" />
+
+    <EditText
+        android:id="@+id/edit_button_name"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:autofillHints="false"
+        android:gravity="center"
+        android:hint="수량"
+        android:inputType="number"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/text_button_number"
+        app:layout_constraintTop_toBottomOf="@id/text_button_name" />
+
+    <Button
+        android:id="@+id/btn_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="유지"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_mode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
