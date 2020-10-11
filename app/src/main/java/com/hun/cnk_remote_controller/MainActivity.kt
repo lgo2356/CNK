@@ -11,7 +11,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btn_connection.setOnClickListener {
-            val intent = Intent(this, BtnModifyActivity::class.java)
+            val intent = Intent(this, ConnectionActivity::class.java)
+            startActivity(intent)
+        }
+
+        btn_setting.setOnClickListener {
+            val intent = Intent(this, SettingActivity::class.java)
             startActivity(intent)
         }
     }
