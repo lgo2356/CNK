@@ -16,8 +16,18 @@ class BtnModifyActivity : AppCompatActivity() {
 
         recycler_modification_list.adapter = btnRecyclerAdapter
 
-        for (number in 1..10) {
-            btnRecyclerAdapter.addItem("번")
+        addBtnModifyItems()
+    }
+
+    private fun addBtnModifyItems() {
+        val btnCount = intent.getIntExtra("btn_count", -1)
+        
+        if (btnCount <= -1) {
+            return
+        }
+
+        for (number in 1 until btnCount + 1) {
+            btnRecyclerAdapter.addItem(number.toString() + "번")
         }
     }
 }
