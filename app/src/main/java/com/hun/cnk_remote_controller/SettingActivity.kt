@@ -13,12 +13,21 @@ class SettingActivity : AppCompatActivity() {
 
         btn_button_setting.setOnClickListener {
             val intent = Intent(this, BtnSettingActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent, Constant.REQ_NORMAL)
+//            startActivity(intent)
         }
 
         btn_button_modification.setOnClickListener {
             val intent = Intent(this, BtnModifyActivity::class.java)
             startActivity(intent)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == Constant.RES_OK) {
+            finish()
         }
     }
 }
