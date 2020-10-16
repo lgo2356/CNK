@@ -7,10 +7,8 @@ import com.hun.cnk_remote_controller.data.BtnRealmObject
 import com.hun.cnk_remote_controller.data.ButtonItem
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_modification_button.*
-import kotlinx.android.synthetic.main.item_modification_button.*
 
 class BtnModifyActivity : AppCompatActivity() {
-    private val realmBtn = Realm.getDefaultInstance()
     private val buttonItems: ArrayList<ButtonItem> = ArrayList()
     private val modifyBtnAdapter: ModifyBtnAdapter = ModifyBtnAdapter(buttonItems)
     private var reqCode = -1
@@ -20,20 +18,7 @@ class BtnModifyActivity : AppCompatActivity() {
         setContentView(R.layout.activity_modification_button)
 
         reqCode = intent.getIntExtra("req_code", -1)
-
         recycler_modification_list.adapter = modifyBtnAdapter
-
-
-        // From BtnSettingActivity
-
-//        Realm.getDefaultInstance().use {
-//            val results: BtnRealmObject? = it.where(BtnRealmObject::class.java).findAll()[5]
-//
-//            it.executeTransaction {
-//                results?.deleteFromRealm()
-//            }
-//        }
-
         listBtnItems()
 
         btn_done.setOnClickListener {
@@ -75,33 +60,9 @@ class BtnModifyActivity : AppCompatActivity() {
         }
     }
 
-    private fun getEditNameText() {
-        val number: Int = text_button_number.text.toString().toInt()
-        val name: String = edit_button_name.text.toString()
-
-//        setBtn(number, name, false)
-    }
-
-    private fun saveNewButtonToRealm(number: Int) {
-        Realm.getDefaultInstance().use {
-            it.executeTransaction { realm ->
-                val btnRealm = BtnRealmObject()
-                val id: Long? = realm.where(BtnRealmObject::class.java).max("id") as Long?
-
-                btnRealm.id = id?.plus(1) ?: 0
-                btnRealm.number = number
-                btnRealm.name = "Default"
-                btnRealm.mode = false
-                realm.copyToRealm(btnRealm)
-            }
-        }
-    }
-
     private fun saveButtonToRealm(number: Int, name: String, mode: Boolean) {
         Realm.getDefaultInstance().use {
             it.executeTransaction { realm ->
-//                val btnRealm = BtnRealmObject()
-//                val id: Long? = realm.where(BtnRealmObject::class.java).max("id") as Long?
                 val btnRealm = realm.where(BtnRealmObject::class.java).equalTo("number", number).findFirst()
                     ?: BtnRealmObject()
 
