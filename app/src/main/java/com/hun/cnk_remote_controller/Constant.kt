@@ -18,7 +18,8 @@ class Constant {
 
         // Activity request code
         const val REQ_NORMAL = 100
-        const val REQ_NEW_BTN = 200
+        const val REQ_NEW_BTN = 101
+        const val REQ_MODIFY_BTN = 102
 
         // Activity result code
         const val RES_OK = 500

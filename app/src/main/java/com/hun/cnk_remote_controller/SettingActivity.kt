@@ -13,13 +13,14 @@ class SettingActivity : AppCompatActivity() {
 
         btn_button_setting.setOnClickListener {
             val intent = Intent(this, BtnSettingActivity::class.java)
+            intent.putExtra("req_code", Constant.REQ_NEW_BTN)
             startActivityForResult(intent, Constant.REQ_NORMAL)
 //            startActivity(intent)
         }
 
         btn_button_modification.setOnClickListener {
             val intent = Intent(this, BtnModifyActivity::class.java)
-            intent.putExtra("req_code", Constant.REQ_NEW_BTN)
+            intent.putExtra("req_code", Constant.REQ_MODIFY_BTN)
             startActivity(intent)
         }
     }
