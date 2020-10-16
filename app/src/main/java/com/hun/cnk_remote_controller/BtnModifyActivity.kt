@@ -1,21 +1,18 @@
 package com.hun.cnk_remote_controller
 
-import android.content.Intent
 import android.os.Bundle
-import android.text.BoringLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.hun.cnk_remote_controller.adapter.BtnRecyclerAdapter
+import com.hun.cnk_remote_controller.adapter.ModifyBtnAdapter
 import com.hun.cnk_remote_controller.data.BtnRealmObject
 import com.hun.cnk_remote_controller.data.ButtonItem
 import io.realm.Realm
-import io.realm.RealmResults
 import kotlinx.android.synthetic.main.activity_modification_button.*
 import kotlinx.android.synthetic.main.item_modification_button.*
 
 class BtnModifyActivity : AppCompatActivity() {
     private val realmBtn = Realm.getDefaultInstance()
     private val buttonItems: ArrayList<ButtonItem> = ArrayList()
-    private val btnRecyclerAdapter: BtnRecyclerAdapter = BtnRecyclerAdapter(buttonItems)
+    private val modifyBtnAdapter: ModifyBtnAdapter = ModifyBtnAdapter(buttonItems)
     private var reqCode = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +21,7 @@ class BtnModifyActivity : AppCompatActivity() {
 
         reqCode = intent.getIntExtra("req_code", -1)
 
-        recycler_modification_list.adapter = btnRecyclerAdapter
+        recycler_modification_list.adapter = modifyBtnAdapter
 
 
         // From BtnSettingActivity
@@ -39,12 +36,10 @@ class BtnModifyActivity : AppCompatActivity() {
 
         listBtnItems()
 
-//        realmTest()
-
         btn_done.setOnClickListener {
             for (i in 0 until buttonItems.size) {
                 val btnNumber: Int = buttonItems[i].number
-                val btnName: String = edit_button_name.text.toString()
+                val btnName: String = buttonItems[i].name
                 val btnMode: Boolean = buttonItems[i].mode
 
                 saveButtonToRealm(btnNumber, btnName, btnMode)
@@ -55,28 +50,14 @@ class BtnModifyActivity : AppCompatActivity() {
         }
     }
 
-    private fun realmTest() {
-        val totalCount = Realm.getDefaultInstance().where(BtnRealmObject::class.java).count()
-        if (totalCount <= 0) {
-            return
-        }
-
-        val items: RealmResults<BtnRealmObject> =
-            Realm.getDefaultInstance().where(BtnRealmObject::class.java).findAll()
-
-        println(totalCount.toString())
-        for (item in items) {
-            println(item.name)
-        }
-    }
-
     private fun listBtnItems() {
         val btnResults = Realm.getDefaultInstance().where(BtnRealmObject::class.java).findAll()
 
         for (btnResult in btnResults) {
-            btnRecyclerAdapter.addItem(btnResult.number, btnResult.name, btnResult.mode)
+            modifyBtnAdapter.addItem(btnResult.number, btnResult.name, btnResult.mode)
         }
 
+        // 버튼 새로 생성하기
         if (reqCode != Constant.REQ_NEW_BTN) {
             return
         }
@@ -87,16 +68,11 @@ class BtnModifyActivity : AppCompatActivity() {
             return
         }
 
-        val maxNumber: Int = Realm.getDefaultInstance().where(BtnRealmObject::class.java).max("number") as Int
+        val maxNumber = Realm.getDefaultInstance().where(BtnRealmObject::class.java).max("number") as Long
 
-        for (number in maxNumber until btnCount + 1) {
-            btnRecyclerAdapter.addItem(number, "", false)
+        for (number in maxNumber.toInt() + 1 .. btnCount + maxNumber.toInt()) {
+            modifyBtnAdapter.addItem(number, "입력", false)
         }
-
-//        for (number in 1 until btnCount + 1) {
-//            btnRecyclerAdapter.addItem(number)
-//            saveNewButtonToRealm(number)
-//        }
     }
 
     private fun getEditNameText() {
