@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#102027</color>
+    <color name="colorPrimaryDark">#000a12</color>
+    <color name="colorAccent">#FA1E3C</color>
+    <color name="colorBluetoothDisconnected">#D0312D</color>
+    <color name="colorBluetoothConnected">#3DED97</color>
+    <color name="colorDivider">#212121</color>
+    <color name="colorMotorPressDown">#777777</color>
+    <color name="colorMotorItemBackgroundNormal">#5A595B</color>
+    <color name="colorDialogText">#FFFFFF</color>
+    <color name="colorTransparent">#00000000</color>
 </resources>
