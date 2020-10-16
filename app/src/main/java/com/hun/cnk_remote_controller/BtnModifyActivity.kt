@@ -70,7 +70,7 @@ class BtnModifyActivity : AppCompatActivity() {
 
         val maxNumber = Realm.getDefaultInstance().where(BtnRealmObject::class.java).max("number") as Long
 
-        for (number in maxNumber.toInt() + 1 .. btnCount + maxNumber.toInt()) {
+        for (number in maxNumber.toInt() + 1..btnCount + maxNumber.toInt()) {
             modifyBtnAdapter.addItem(number, "입력", false)
         }
     }
@@ -103,13 +103,12 @@ class BtnModifyActivity : AppCompatActivity() {
 //                val btnRealm = BtnRealmObject()
 //                val id: Long? = realm.where(BtnRealmObject::class.java).max("id") as Long?
                 val btnRealm = realm.where(BtnRealmObject::class.java).equalTo("number", number).findFirst()
+                    ?: BtnRealmObject()
 
-                if (btnRealm != null) {
-                    btnRealm.number = number
-                    btnRealm.name = name
-                    btnRealm.mode = mode
-                    realm.copyToRealm(btnRealm)
-                }
+                btnRealm.number = number
+                btnRealm.name = name
+                btnRealm.mode = mode
+                realm.copyToRealm(btnRealm)
             }
         }
     }
