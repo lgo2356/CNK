@@ -6,22 +6,6 @@
     android:layout_height="match_parent"
     tools:ignore="HardCodedText">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar_main"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar_main"
-            android:layout_width="match_parent"
-            android:layout_height="?android:attr/actionBarSize"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:menu="@menu/toolbar_main" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
     <TextView
         android:id="@+id/text_logo"
         android:layout_width="match_parent"
