@@ -19,6 +19,7 @@ class SettingActivity : AppCompatActivity() {
 
         btn_button_modification.setOnClickListener {
             val intent = Intent(this, BtnModifyActivity::class.java)
+            intent.putExtra("req_code", Constant.REQ_NEW_BTN)
             startActivity(intent)
         }
     }

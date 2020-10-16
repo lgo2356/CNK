@@ -30,7 +30,7 @@ class BtnSettingActivity : AppCompatActivity() {
         btn_next.setOnClickListener {
             val intent = Intent(this, BtnModifyActivity::class.java)
             intent.putExtra("btn_count", inputBtnCount)
-            startActivityForResult(intent, Constant.REQ_NORMAL)
+            startActivityForResult(intent, Constant.REQ_NEW_BTN)
 //            startActivity(intent)
         }
     }

@@ -18,8 +18,12 @@ class Constant {
 
         // Activity request code
         const val REQ_NORMAL = 100
+        const val REQ_NEW_BTN = 200
 
         // Activity result code
         const val RES_OK = 500
+
+        // Common code
+
     }
 }
