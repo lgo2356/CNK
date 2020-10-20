@@ -6,9 +6,9 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.ToggleButton
 import androidx.recyclerview.widget.RecyclerView
 import com.hun.cnk_remote_controller.R
 import com.hun.cnk_remote_controller.data.ButtonItem
@@ -32,15 +32,13 @@ class ModifyBtnAdapter(private val items: ArrayList<ButtonItem>) :
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-//                inputBtnCount = edit_button_count.text.toString().toInt()
                 items[position].name = holder.editName.text.toString()
             }
         })
 
-        if (items[position].mode) {
-            holder.btnMode.text = "유지"
-        } else {
-            holder.btnMode.text = "복귀"
+        holder.btnMode.isChecked = items[position].mode
+        holder.btnMode.setOnClickListener {
+            items[position].mode = holder.btnMode.isChecked
         }
     }
 
@@ -60,6 +58,6 @@ class ModifyBtnAdapter(private val items: ArrayList<ButtonItem>) :
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvNumber: TextView = itemView.findViewById(R.id.text_button_number)
         val editName: EditText = itemView.findViewById(R.id.edit_button_name)
-        val btnMode: Button = itemView.findViewById(R.id.btn_mode)
+        val btnMode: ToggleButton = itemView.findViewById(R.id.btn_mode)
     }
 }
