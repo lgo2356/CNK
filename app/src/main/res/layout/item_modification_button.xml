@@ -53,11 +53,12 @@
         app:layout_constraintStart_toEndOf="@id/text_button_number"
         app:layout_constraintTop_toBottomOf="@id/text_button_name" />
 
-    <Button
+    <ToggleButton
         android:id="@+id/btn_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="유지"
+        android:textOff="복귀"
+        android:textOn="유지"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
