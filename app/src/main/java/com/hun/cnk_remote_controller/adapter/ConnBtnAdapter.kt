@@ -1,12 +1,11 @@
 package com.hun.cnk_remote_controller.adapter
 
-import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.hun.cnk_remote_controller.R
 import com.hun.cnk_remote_controller.data.ButtonItem
@@ -15,6 +14,8 @@ class ConnBtnAdapter(private val items: ArrayList<ButtonItem>) :
     RecyclerView.Adapter<ConnBtnAdapter.ViewHolder>() {
 
     private var itemTouchListener: OnItemTouchListener? = null
+    private val toggleManageList: Array<Boolean> =
+        arrayOf(false, false, false, false, false, false, false, false, false, false)
 
     interface OnItemTouchListener {
         fun onItemTouchActionDown(view: View, motionEvent: MotionEvent, position: Int)
@@ -33,23 +34,55 @@ class ConnBtnAdapter(private val items: ArrayList<ButtonItem>) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.tvBtnName.text = items[position].name
-
+        holder.tvName.text = items[position].name
         holder.itemView.setOnTouchListener { view, motionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    Log.d("Debug", "Action down")
-                    itemTouchListener?.onItemTouchActionDown(view, motionEvent, position)
+                    itemTouchListener?.onItemTouchActionUp(view, motionEvent, position)
+
+                    if (!items[position].mode) {  // Default mode
+                        holder.tvName.setBackgroundColor(
+                            ContextCompat.getColor(
+                                holder.tvName.context,
+                                R.color.colorMotorPressDown
+                            )
+                        )
+                    }
+
+                    if (items[position].mode) {  // Toggle mode
+                        holder.tvName.setBackgroundColor(
+                            ContextCompat.getColor(
+                                holder.tvName.context,
+                                R.color.colorMotorPressDown
+                            )
+                        )
+
+                        if (toggleManageList[position]) {
+                            holder.tvName.setBackgroundColor(
+                                ContextCompat.getColor(
+                                    holder.tvName.context,
+                                    R.color.colorMotorItemBackgroundNormal
+                                )
+                            )
+                        }
+
+                        toggleManageList[position] = !toggleManageList[position]
+                    }
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    Log.d("Debug", "Action up")
                     itemTouchListener?.onItemTouchActionUp(view, motionEvent, position)
+                    if (!items[position].mode) {  // If not toggle mode (toggle: true, default: false)
+                        holder.tvName.setBackgroundColor(
+                            ContextCompat.getColor(
+                                holder.tvName.context, R.color.colorMotorItemBackgroundNormal
+                            )
+                        )
+                    }
                     view.performClick()
                 }
 
                 MotionEvent.ACTION_CANCEL -> {
-                    Log.d("Debug", "Action cancel")
                     itemTouchListener?.onItemTouchActionCancel(view, motionEvent, position)
                     view.performClick()
                 }
@@ -62,14 +95,15 @@ class ConnBtnAdapter(private val items: ArrayList<ButtonItem>) :
         return items.size
     }
 
-    fun addItem(name: String) {
+    fun addItem(name: String, mode: Boolean) {
         val item = ButtonItem()
         item.name = name
+        item.mode = mode
         items.add(item)
         notifyDataSetChanged()
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvBtnName: TextView = itemView.findViewById(R.id.text_button_name)
+        val tvName: TextView = itemView.findViewById(R.id.tv_name)
     }
 }
