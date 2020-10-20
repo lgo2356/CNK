@@ -10,6 +10,11 @@ import android.view.MenuItem
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
+/**
+ * Create new button: MainActivity -> SettingActivity -> BtnSettingActivity -> BtnModifyActivity
+ * Modify button: MainActivity -> SettingActivity -> BtnModifyActivity
+ */
+
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
