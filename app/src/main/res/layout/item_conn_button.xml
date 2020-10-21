@@ -17,11 +17,12 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/text_button_name"
+            android:id="@+id/tv_name"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/colorMotorItemBackgroundNormal"
             android:gravity="center"
-            android:text="상"
+            android:text="name"
             android:textSize="32sp" />
 
     </androidx.cardview.widget.CardView>
