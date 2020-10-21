@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="30dp"
+    android:paddingStart="10dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="20dp"
     tools:ignore="HardCodedText">
 
     <TextView
@@ -23,9 +26,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="방식"
-        app:layout_constraintBottom_toTopOf="@id/btn_mode"
-        app:layout_constraintEnd_toEndOf="@id/btn_mode"
-        app:layout_constraintStart_toStartOf="@id/btn_mode"
+        app:layout_constraintBottom_toTopOf="@id/toggle_mode"
+        app:layout_constraintEnd_toEndOf="@id/toggle_mode"
+        app:layout_constraintStart_toStartOf="@id/toggle_mode"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
 
@@ -42,7 +45,7 @@
 
     <EditText
         android:id="@+id/edit_button_name"
-        android:layout_width="150dp"
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:autofillHints="false"
@@ -54,14 +57,26 @@
         app:layout_constraintTop_toBottomOf="@id/text_button_name" />
 
     <ToggleButton
-        android:id="@+id/btn_mode"
+        android:id="@+id/toggle_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textOff="복귀"
         android:textOn="유지"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/iv_bin"
+        app:layout_constraintStart_toEndOf="@id/edit_button_name"
         app:layout_constraintTop_toBottomOf="@id/text_mode" />
+
+    <ImageView
+        android:id="@+id/iv_bin"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:src="@drawable/delete_bin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_mode"
+        tools:ignore="ContentDescription" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
