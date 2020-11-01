@@ -1,6 +1,10 @@
 package com.hun.cnk_remote_controller
 
 import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -11,6 +15,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.hun.cnk_remote_controller.adapter.ConnBtnAdapter
 import com.hun.cnk_remote_controller.data.BtnRealmObject
 import com.hun.cnk_remote_controller.data.ButtonItem
@@ -18,15 +23,22 @@ import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_connection.*
 import kotlinx.coroutines.*
 import java.io.IOException
+import java.lang.IllegalArgumentException
 
 class ConnectionActivity : AppCompatActivity() {
 
     private val buttonItems: ArrayList<ButtonItem> = ArrayList()
     private val connBtnAdapter = ConnBtnAdapter(buttonItems)
-    private var isBtnActionDown = false
+    private var isRunning = false
     private lateinit var bluetoothService: BluetoothService
     private lateinit var bluetoothDialog: BluetoothDialog
     private lateinit var handler: Handler
+    private val baseBytes: ByteArray = byteArrayOf(1, 2, 4, 8, 16, 32, 64, 128.toByte())
+    private var sendBytes: ByteArray = byteArrayOf()
+    private var upperPos: Byte = 0
+    private var lowerPos: Byte = 0
+    private var upperOnOff: Byte = 0
+    private var lowerOnOff: Byte = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,122 +115,150 @@ class ConnectionActivity : AppCompatActivity() {
 
         connBtnAdapter.setOnItemTouchListener(object : ConnBtnAdapter.OnItemTouchListener {
             override fun onItemTouchActionDown(view: View, motionEvent: MotionEvent, position: Int) {
-                isBtnActionDown = true
+                val isToggleBtn = buttonItems[position].mode
 
-                if (::bluetoothService.isInitialized) {
-                    if (bluetoothService.isConnected()) {
-                        sendPacketManually(position)
+                if (!isToggleBtn) {  // If this button is not a toggle button
+                    setSendBytes(position, true)
+
+                    if (::bluetoothService.isInitialized) {  // Checking BluetoothService class has been initialized
+                        if (bluetoothService.isConnected()) {  // Checking bluetooth connection with server
+                            sendPacketManually()
+//                            if (!isRunning) {  // If not a scope is already running...
+//                                sendPacketManually()
+//                            }
+                        } else {
+                            showSnackBar("블루투스를 연결해주세요")
+                        }
                     } else {
-//                        showSnackBar("블루투스를 연결해주세요")
+                        Toast.makeText(
+                            applicationContext,
+                            "BluetoothService class is not initialized.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                } else {
-                    Toast.makeText(applicationContext, "Late init exception", Toast.LENGTH_SHORT).show()
+                } else {  // If this button is a toggle button
+//                    setSendBytes(position, buttonItems[position].state)
                 }
             }
 
             override fun onItemTouchActionUp(view: View, motionEvent: MotionEvent, position: Int) {
-                isBtnActionDown = false
+                val isToggleBtn = buttonItems[position].mode
+
+                if (isToggleBtn) {  // Toggle
+                    buttonItems[position].state = !buttonItems[position].state  // Button state switching
+                    setSendBytes(position, buttonItems[position].state)
+
+                    if (::bluetoothService.isInitialized) {  // Checking BluetoothService class has been initialized
+                        if (bluetoothService.isConnected()) {  // Checking bluetooth connection with server
+                            sendPacketManually()
+//                            if (!isRunning) {  // If not a scope is already running...
+//                                sendPacketManually()
+//                            }
+                        } else {
+                            showSnackBar("블루투스를 연결해주세요")
+                        }
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            "BluetoothService class is not initialized.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    setSendBytes(position, false)
+                }
             }
 
             override fun onItemTouchActionCancel(view: View, motionEvent: MotionEvent, position: Int) {
-                isBtnActionDown = false
+                setSendBytes(position, false)
             }
         })
+    }
+
+    private fun setSendBytes(position: Int, onOff: Boolean) {
+        if (onOff) {
+            if (position < 8) {
+                lowerPos = (lowerPos + baseBytes[position]).toByte()
+                lowerOnOff = (lowerOnOff + baseBytes[position]).toByte()
+            } else if (position < 16) {
+                upperPos = (upperPos + baseBytes[position]).toByte()
+                upperOnOff = (upperOnOff + baseBytes[position]).toByte()
+            }
+        } else {
+            if (position < 8) {
+                lowerPos = (lowerPos - baseBytes[position]).toByte()
+                lowerOnOff = (lowerOnOff - baseBytes[position]).toByte()
+            } else if (position < 16) {
+                upperPos = (upperPos - baseBytes[position]).toByte()
+                upperOnOff = (upperOnOff - baseBytes[position]).toByte()
+            }
+        }
+
+        Log.d("Debug", "lowerPos: $lowerPos")
+        Log.d("Debug", "lowerOnOff: $lowerOnOff")
+        Log.d("Debug", "upperPos: $upperPos")
+        Log.d("Debug", "upperOnOff: $upperOnOff")
+
+        sendBytes = byteArrayOf(0x68, upperPos, lowerPos, upperOnOff, lowerOnOff, 0x7e)
     }
 
     private fun listBtnItems() {
         val btnResults = Realm.getDefaultInstance().where(BtnRealmObject::class.java).findAll()
 
         for (btnResult in btnResults) {
-            connBtnAdapter.addItem(btnResult.name)
+            connBtnAdapter.addItem(btnResult.name, btnResult.mode)
         }
     }
 
-    private fun sendPacketManually(position: Int) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                var count = 0
+    private fun sendPacketManually() {
+        try {
+            val totalBytes = upperPos + lowerPos + upperOnOff + lowerOnOff
+            Log.d("Debug", "Scope is running... bytes are - $totalBytes")
+            Log.d("Debug", "lowerPos: $lowerPos")
+            Log.d("Debug", "lowerOnOff: $lowerOnOff")
+            Log.d("Debug", "upperPos: $upperPos")
+            Log.d("Debug", "upperOnOff: $upperOnOff")
 
-                while (bluetoothService.isConnected()) {
-                    if (isBtnActionDown) {
-                        Log.d("Debug", "Action down - ${count++}")
-
-                        val bytes = makePacketBytes(position, true)
-                        bluetoothService.writeBytes(bytes)
-                    } else {
-                        Log.d("Debug", "Action up - ${count++}")
-
-                        val bytes = makePacketBytes(position, false)
-                        bluetoothService.writeBytes(bytes)
-                        this.cancel()
-                    }
-
-                    delay(5)
-                }
-            } catch (e: IOException) {
-                Log.d("Debug", "Error from writeManuallyScope", e)
-                this.cancel()
-            }
+            bluetoothService.writeBytes(sendBytes)
+        } catch (e: IOException) {
+            Log.d("Debug", "Error from writeManuallyScope", e)
         }
-    }
-
-//    private fun makePacketBytes(onOff: Boolean): ByteArray {
-//        val state: Byte = if (onOff) 0x01
-//        else 0x00
+//        CoroutineScope(Dispatchers.IO).launch {
+//            try {
+//                isRunning = true
+//                var count = 0
 //
-//        val positionBytes: IntArray = getPositionByte(isToggledArray, onOff)
+//                while (bluetoothService.isConnected()) {
+//                    val totalBytes = upperPos + lowerPos + upperOnOff + lowerOnOff
+////                    Log.d("Debug", "Scope is running... - ${count++}")
+//                    if (totalBytes <= 0) {
+//                        isRunning = false
+//                        this.cancel()
+//                    }
+//                    bluetoothService.writeBytes(sendBytes)
+//                    delay(5)
 //
-//        return byteArrayOf(0x68, positionBytes[0].toByte(), positionBytes[1].toByte(), state, 0x7E)
-//    }
-
-    private fun makePacketBytes(position: Int, onOff: Boolean): ByteArray {
-        val bytes: Array<Int> = arrayOf(1, 2, 4, 8, 16, 32, 64, 128)
-        var upperByte = 0
-        var lowerByte = 0
-
-        val state: Byte = if (onOff) 0x01
-        else 0x00
-
-        if (position < 8) {
-            lowerByte = bytes[position]
-        } else if (position < 16) {
-            upperByte = bytes[position - 8]
-        }
-
-        return byteArrayOf(0x68, upperByte.toByte(), lowerByte.toByte(), state, 0x7E)
+////                    if (isSendFlag) {
+////                        Log.d("Debug", "Action down - ${count++}")
+//////                        val bytes = makePacketBytes(position, true)
+//////                        bluetoothService.writeBytes(sendBytes)
+////                    } else {
+////                        Log.d("Debug", "Action up - ${count++}")
+//////                        val bytes = makePacketBytes(position, false)
+//////                        bluetoothService.writeBytes(sendBytes)
+////                        this.cancel()
+////                    }
+//                }
+//            } catch (e: IOException) {
+//                Log.d("Debug", "Error from writeManuallyScope", e)
+//                isRunning = false
+//                this.cancel()
+//            }
     }
 
-    private fun getPositionByte(toggledArray: Array<Boolean>, onOff: Boolean): IntArray {
-        val upperBytes: Array<Int> = arrayOf(1, 2, 4, 8, 16, 32, 64, 128)
-        val lowerBytes: Array<Int> = arrayOf(1, 2, 4, 8, 16, 32, 64, 128)
-        var positionUpperByte = 0
-        var positionLowerByte = 0
-
-        for (i in 0 until 8) {
-            if (onOff) {
-                if (toggledArray[i]) {
-                    positionLowerByte += lowerBytes[i]
-                }
-            } else {
-                if (!toggledArray[i]) {
-                    positionLowerByte += lowerBytes[i]
-                }
-            }
-        }
-
-        for (i in 0 until 8) {
-            if (onOff) {
-                if (toggledArray[i + 8]) {
-                    positionUpperByte += upperBytes[i]
-                }
-            } else {
-                if (!toggledArray[i + 8]) {
-                    positionUpperByte += upperBytes[i]
-                }
-            }
-        }
-
-        return intArrayOf(positionUpperByte, positionLowerByte)
+    private fun showSnackBar(message: String) {
+        val snackBar = Snackbar.make(container_main, message, Snackbar.LENGTH_INDEFINITE)
+        snackBar.setAction("확인") { snackBar.dismiss() }.show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -243,4 +283,68 @@ class ConnectionActivity : AppCompatActivity() {
             }
         }
     }
+
+    /**
+     * Receiver
+     */
+    private fun registerBluetoothReceiver() {
+        val filter = IntentFilter().apply {
+            addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
+        }
+        this.registerReceiver(receiver, filter)
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
+                    Log.d("Debug", "Bluetooth device disconnected")
+//                    setDeviceConnectingIcon(false)
+                    bluetoothService.close()
+                }
+            }
+        }
+    }
+
+    /**
+     * Life cycle
+     */
+    override fun onResume() {
+        super.onResume()
+        Log.d("Debug", "onResume")
+        registerBluetoothReceiver()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("Debug", "onStop")
+
+        try {
+            this.unregisterReceiver(receiver)
+        } catch (e: IllegalArgumentException) {
+            Log.d("Debug", "Failed to unregister receiver", e)
+//            val errorMsg = handler.obtainMessage(Constants.MESSAGE_ERROR, "Failed to unregister receiver")
+//            errorMsg.sendToTarget()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("Debug", "onDestroy")
+
+        if (::bluetoothService.isInitialized) {
+            bluetoothService.close()
+        } else {
+            Log.d("Debug", "BluetoothService is not initialized")
+        }
+    }
+
+    //    private fun makePacketBytes(onOff: Boolean): ByteArray {
+//        val state: Byte = if (onOff) 0x01
+//        else 0x00
+//
+//        val positionBytes: IntArray = getPositionByte(isToggledArray, onOff)
+//
+//        return byteArrayOf(0x68, positionBytes[0].toByte(), positionBytes[1].toByte(), state, 0x7E)
+//    }
 }
