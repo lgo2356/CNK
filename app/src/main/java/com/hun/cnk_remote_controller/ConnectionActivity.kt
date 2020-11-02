@@ -1,17 +1,12 @@
 package com.hun.cnk_remote_controller
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
@@ -27,9 +22,11 @@ import java.lang.IllegalArgumentException
 
 class ConnectionActivity : AppCompatActivity() {
 
+    private lateinit var preferences: SharedPreferences
+    private val sharedPrefFile: String = "com.hun.cnk_remote_controller"
+    private var deviceAddress: String = ""
     private val buttonItems: ArrayList<ButtonItem> = ArrayList()
     private val connBtnAdapter = ConnBtnAdapter(buttonItems)
-    private var isRunning = false
     private lateinit var bluetoothService: BluetoothService
     private lateinit var bluetoothDialog: BluetoothDialog
     private lateinit var handler: Handler
@@ -48,21 +45,6 @@ class ConnectionActivity : AppCompatActivity() {
 
         handler = Handler {
             when (it.what) {
-                Constant.MESSAGE_READ -> {
-//                    val readBytes: ByteArray = it.obj as ByteArray
-//                    val readString = String(readBytes, US_ASCII)
-                    val readString: String = it.obj as String
-//                    text_read.text = readString
-                }
-
-                Constant.MESSAGE_WRITE -> {
-//                    val readBytes: ByteArray = it.obj as ByteArray
-                    val readByte: Int = it.obj as Int
-//                    val readString = String(readByte, US_ASCII)
-                    val readString = readByte.toString()
-//                    text_message.text = readString
-                }
-
                 Constant.MESSAGE_TOAST -> {
                     val message = it.obj.toString()
                     Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
@@ -71,10 +53,7 @@ class ConnectionActivity : AppCompatActivity() {
                 Constant.MESSAGE_CONNECTED -> {
                     if (::bluetoothService.isInitialized) {
                         Toast.makeText(applicationContext, "디바이스에 연결되었습니다", Toast.LENGTH_SHORT).show()
-//                        bluetoothService.startRead()
-
-//                        setDeviceConnectingIcon(true)
-                        bluetoothDialog.dismiss()
+//                        bluetoothDialog.dismiss()
                     } else {
                         Toast.makeText(applicationContext, "Late init exception", Toast.LENGTH_SHORT).show()
                     }
@@ -84,8 +63,6 @@ class ConnectionActivity : AppCompatActivity() {
                     if (::bluetoothService.isInitialized) {
                         Toast.makeText(applicationContext, "디바이스와의 연결이 끊어졌습니다", Toast.LENGTH_SHORT).show()
                         bluetoothService.close()
-
-//                        setDeviceConnectingIcon(false)
                     } else {
                         Toast.makeText(applicationContext, "Late init exception", Toast.LENGTH_SHORT).show()
                     }
@@ -93,21 +70,29 @@ class ConnectionActivity : AppCompatActivity() {
 
                 Constant.MESSAGE_DEVICE -> {
                     val device: BluetoothDevice = it.obj as BluetoothDevice
+                    deviceAddress = device.address
                     bluetoothService.connect(device)
                 }
 
                 Constant.MESSAGE_ERROR -> {
                     val message = it.obj.toString()
                     Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
-
-//                    setDeviceConnectingIcon(false)
-                    bluetoothDialog.dismiss()
+//                    bluetoothDialog.dismiss()
                 }
             }
             true
         }
 
         bluetoothService = BluetoothService(handler)
+
+        preferences = getSharedPreferences(sharedPrefFile, MODE_PRIVATE)
+        val address: String? = preferences.getString("address", "") ?: ""
+
+        if (address?.isNotEmpty() == true) {
+            val btAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+            val device = btAdapter.getRemoteDevice(address)
+            bluetoothService.connect(device)
+        }
 
         recycler_button_list.adapter = connBtnAdapter
         recycler_button_list.layoutManager = GridLayoutManager(this, 2)
@@ -117,27 +102,16 @@ class ConnectionActivity : AppCompatActivity() {
             override fun onItemTouchActionDown(view: View, motionEvent: MotionEvent, position: Int) {
                 val isToggleBtn = buttonItems[position].mode
 
-                if (!isToggleBtn) {  // If this button is not a toggle button
+                if (!isToggleBtn) {
                     setSendBytes(position, true)
-
-                    if (::bluetoothService.isInitialized) {  // Checking BluetoothService class has been initialized
-                        if (bluetoothService.isConnected()) {  // Checking bluetooth connection with server
-                            sendPacketManually()
-//                            if (!isRunning) {  // If not a scope is already running...
-//                                sendPacketManually()
-//                            }
+                    // Sending packet
+                    if (::bluetoothService.isInitialized) {
+                        if (bluetoothService.isConnected()) {
+                            sendPacket()
                         } else {
                             showSnackBar("블루투스를 연결해주세요")
                         }
-                    } else {
-                        Toast.makeText(
-                            applicationContext,
-                            "BluetoothService class is not initialized.",
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
-                } else {  // If this button is a toggle button
-//                    setSendBytes(position, buttonItems[position].state)
                 }
             }
 
@@ -147,25 +121,24 @@ class ConnectionActivity : AppCompatActivity() {
                 if (isToggleBtn) {  // Toggle
                     buttonItems[position].state = !buttonItems[position].state  // Button state switching
                     setSendBytes(position, buttonItems[position].state)
-
-                    if (::bluetoothService.isInitialized) {  // Checking BluetoothService class has been initialized
-                        if (bluetoothService.isConnected()) {  // Checking bluetooth connection with server
-                            sendPacketManually()
-//                            if (!isRunning) {  // If not a scope is already running...
-//                                sendPacketManually()
-//                            }
+                    // Sending packet
+                    if (::bluetoothService.isInitialized) {
+                        if (bluetoothService.isConnected()) {
+                            sendPacket()
                         } else {
                             showSnackBar("블루투스를 연결해주세요")
                         }
-                    } else {
-                        Toast.makeText(
-                            applicationContext,
-                            "BluetoothService class is not initialized.",
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
-                } else {
+                } else {  // Default
                     setSendBytes(position, false)
+                    // Sending packet
+                    if (::bluetoothService.isInitialized) {
+                        if (bluetoothService.isConnected()) {
+                            sendPacket()
+                        } else {
+                            showSnackBar("블루투스를 연결해주세요")
+                        }
+                    }
                 }
             }
 
@@ -193,12 +166,6 @@ class ConnectionActivity : AppCompatActivity() {
                 upperOnOff = (upperOnOff - baseBytes[position]).toByte()
             }
         }
-
-        Log.d("Debug", "lowerPos: $lowerPos")
-        Log.d("Debug", "lowerOnOff: $lowerOnOff")
-        Log.d("Debug", "upperPos: $upperPos")
-        Log.d("Debug", "upperOnOff: $upperOnOff")
-
         sendBytes = byteArrayOf(0x68, upperPos, lowerPos, upperOnOff, lowerOnOff, 0x7e)
     }
 
@@ -210,50 +177,12 @@ class ConnectionActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendPacketManually() {
+    private fun sendPacket() {
         try {
-            val totalBytes = upperPos + lowerPos + upperOnOff + lowerOnOff
-            Log.d("Debug", "Scope is running... bytes are - $totalBytes")
-            Log.d("Debug", "lowerPos: $lowerPos")
-            Log.d("Debug", "lowerOnOff: $lowerOnOff")
-            Log.d("Debug", "upperPos: $upperPos")
-            Log.d("Debug", "upperOnOff: $upperOnOff")
-
             bluetoothService.writeBytes(sendBytes)
         } catch (e: IOException) {
             Log.d("Debug", "Error from writeManuallyScope", e)
         }
-//        CoroutineScope(Dispatchers.IO).launch {
-//            try {
-//                isRunning = true
-//                var count = 0
-//
-//                while (bluetoothService.isConnected()) {
-//                    val totalBytes = upperPos + lowerPos + upperOnOff + lowerOnOff
-////                    Log.d("Debug", "Scope is running... - ${count++}")
-//                    if (totalBytes <= 0) {
-//                        isRunning = false
-//                        this.cancel()
-//                    }
-//                    bluetoothService.writeBytes(sendBytes)
-//                    delay(5)
-//
-////                    if (isSendFlag) {
-////                        Log.d("Debug", "Action down - ${count++}")
-//////                        val bytes = makePacketBytes(position, true)
-//////                        bluetoothService.writeBytes(sendBytes)
-////                    } else {
-////                        Log.d("Debug", "Action up - ${count++}")
-//////                        val bytes = makePacketBytes(position, false)
-//////                        bluetoothService.writeBytes(sendBytes)
-////                        this.cancel()
-////                    }
-//                }
-//            } catch (e: IOException) {
-//                Log.d("Debug", "Error from writeManuallyScope", e)
-//                isRunning = false
-//                this.cancel()
-//            }
     }
 
     private fun showSnackBar(message: String) {
@@ -274,7 +203,6 @@ class ConnectionActivity : AppCompatActivity() {
                 if (::bluetoothDialog.isInitialized) {
                     bluetoothDialog.show(supportFragmentManager, "missiles")
                 }
-
                 true
             }
 
@@ -291,7 +219,12 @@ class ConnectionActivity : AppCompatActivity() {
         val filter = IntentFilter().apply {
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         }
-        this.registerReceiver(receiver, filter)
+
+        try {
+            this.registerReceiver(receiver, filter)
+        } catch (e: IllegalAccessException) {
+            Log.d("Debug", "Failed to register receiver", e)
+        }
     }
 
     private val receiver = object : BroadcastReceiver() {
@@ -299,7 +232,6 @@ class ConnectionActivity : AppCompatActivity() {
             when (intent.action) {
                 BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
                     Log.d("Debug", "Bluetooth device disconnected")
-//                    setDeviceConnectingIcon(false)
                     bluetoothService.close()
                 }
             }
@@ -315,6 +247,16 @@ class ConnectionActivity : AppCompatActivity() {
         registerBluetoothReceiver()
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        if (deviceAddress.isNotEmpty()) {
+            val preferencesEditor: SharedPreferences.Editor = preferences.edit()
+            preferencesEditor.putString("address", deviceAddress)
+            preferencesEditor.apply()
+        }
+    }
+
     override fun onStop() {
         super.onStop()
         Log.d("Debug", "onStop")
@@ -323,8 +265,6 @@ class ConnectionActivity : AppCompatActivity() {
             this.unregisterReceiver(receiver)
         } catch (e: IllegalArgumentException) {
             Log.d("Debug", "Failed to unregister receiver", e)
-//            val errorMsg = handler.obtainMessage(Constants.MESSAGE_ERROR, "Failed to unregister receiver")
-//            errorMsg.sendToTarget()
         }
     }
 
@@ -338,13 +278,4 @@ class ConnectionActivity : AppCompatActivity() {
             Log.d("Debug", "BluetoothService is not initialized")
         }
     }
-
-    //    private fun makePacketBytes(onOff: Boolean): ByteArray {
-//        val state: Byte = if (onOff) 0x01
-//        else 0x00
-//
-//        val positionBytes: IntArray = getPositionByte(isToggledArray, onOff)
-//
-//        return byteArrayOf(0x68, positionBytes[0].toByte(), positionBytes[1].toByte(), state, 0x7E)
-//    }
 }
