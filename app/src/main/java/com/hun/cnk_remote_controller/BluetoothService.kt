@@ -14,18 +14,21 @@ import kotlinx.coroutines.*
 
 class BluetoothService(private val handler: Handler) {
 
-    private val insecureUuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+//    companion object {
+//        var mSocket: BluetoothSocket? = null
+//        var mOutputStream: OutputStream? = null
+//        var mInputStream: InputStream? = null
+//    }
 
+    private val insecureUuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     private var mSocket: BluetoothSocket? = null
     private var mOutputStream: OutputStream? = null
     private var mInputStream: InputStream? = null
 
-    private val readJob = Job()
-    private val writeByteJob = Job()
-    private val writeBytesJob = Job()
-    private val readScope = CoroutineScope(Dispatchers.Main + readJob)
-    private val writeByteScope = CoroutineScope(Dispatchers.Main + writeByteJob)
-    private val writeBytesScope = CoroutineScope(Dispatchers.IO + writeBytesJob)
+//    private val readJob = Job()
+//    private val writeByteJob = Job()
+//    private val writeBytesJob = Job()
+//    private val readScope = CoroutineScope(Dispatchers.Main + readJob)
 
     fun connect(device: BluetoothDevice) {
         GlobalScope.launch(Dispatchers.IO) {
@@ -59,66 +62,66 @@ class BluetoothService(private val handler: Handler) {
         }
     }
 
-    fun startRead() {
-        readScope.launch(Dispatchers.IO) {
-            val buffer = ByteArray(1024)
-            var bufferPosition = 0
-            val delimiter: Byte = 0x0A
-
-            try {
-                while (mSocket != null) {
-                    var bytesAvailable = 0
-
-                    if (mSocket != null && mSocket?.isConnected == true) {
-                        bytesAvailable = mInputStream?.available() ?: 0
-                    }
-
-                    if (bytesAvailable > 0) {
-                        val packetBytes = ByteArray(bytesAvailable)
-                        mSocket?.inputStream?.read(packetBytes)
-
-                        for (i in 0 until bytesAvailable) {
-                            val byte: Byte = packetBytes[i]
-
-                            if (byte == delimiter) {
-                                val encodedBytes = ByteArray(bufferPosition)
-                                System.arraycopy(buffer, 0, encodedBytes, 0, encodedBytes.size)
-
-                                val readString = String(encodedBytes, StandardCharsets.US_ASCII)
-                                bufferPosition = 0
-
-                                val readMsg = handler.obtainMessage(Constant.MESSAGE_READ, readString)
-                                readMsg.sendToTarget()
-                            } else {
-                                buffer[bufferPosition++] = byte
-                            }
-                        }
-                    }
-                }
-            } catch (e: IOException) {
-                Log.d("Debug", "Input stream was disconnected", e)
-                readJob.cancel()
-                close()
-            } catch (e: UnsupportedEncodingException) {
-                Log.d("Debug", "Unsupported encoding format", e)
-                val errorMsg = handler.obtainMessage(Constant.MESSAGE_TOAST, "Unsupported encoding format")
-                errorMsg.sendToTarget()
-            } catch (e: KotlinNullPointerException) {
-                val errorMsg = handler.obtainMessage(Constant.MESSAGE_TOAST, "Kotlin null pointer exception")
-                errorMsg.sendToTarget()
-                e.printStackTrace()
-            }
-        }
-    }
+//    fun startRead() {
+//        readScope.launch(Dispatchers.IO) {
+//            val buffer = ByteArray(1024)
+//            var bufferPosition = 0
+//            val delimiter: Byte = 0x0A
+//
+//            try {
+//                while (mSocket != null) {
+//                    var bytesAvailable = 0
+//
+//                    if (mSocket != null && mSocket?.isConnected == true) {
+//                        bytesAvailable = mInputStream?.available() ?: 0
+//                    }
+//
+//                    if (bytesAvailable > 0) {
+//                        val packetBytes = ByteArray(bytesAvailable)
+//                        mSocket?.inputStream?.read(packetBytes)
+//
+//                        for (i in 0 until bytesAvailable) {
+//                            val byte: Byte = packetBytes[i]
+//
+//                            if (byte == delimiter) {
+//                                val encodedBytes = ByteArray(bufferPosition)
+//                                System.arraycopy(buffer, 0, encodedBytes, 0, encodedBytes.size)
+//
+//                                val readString = String(encodedBytes, StandardCharsets.US_ASCII)
+//                                bufferPosition = 0
+//
+//                                val readMsg = handler.obtainMessage(Constant.MESSAGE_READ, readString)
+//                                readMsg.sendToTarget()
+//                            } else {
+//                                buffer[bufferPosition++] = byte
+//                            }
+//                        }
+//                    }
+//                }
+//            } catch (e: IOException) {
+//                Log.d("Debug", "Input stream was disconnected", e)
+//                readJob.cancel()
+//                close()
+//            } catch (e: UnsupportedEncodingException) {
+//                Log.d("Debug", "Unsupported encoding format", e)
+//                val errorMsg = handler.obtainMessage(Constant.MESSAGE_TOAST, "Unsupported encoding format")
+//                errorMsg.sendToTarget()
+//            } catch (e: KotlinNullPointerException) {
+//                val errorMsg = handler.obtainMessage(Constant.MESSAGE_TOAST, "Kotlin null pointer exception")
+//                errorMsg.sendToTarget()
+//                e.printStackTrace()
+//            }
+//        }
+//    }
 
     fun close() {
         try {
-            writeByteJob.cancel()
+//            writeByteJob.cancel()
             mOutputStream?.close()
             mOutputStream = null
             Log.d("Debug", "Output stream closed")
 
-            readJob.cancel()
+//            readJob.cancel()
             mInputStream?.close()
             mInputStream = null
             Log.d("Debug", "Input stream closed")
