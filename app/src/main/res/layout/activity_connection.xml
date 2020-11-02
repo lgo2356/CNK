@@ -5,6 +5,8 @@
     android:id="@+id/container_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@color/colorConnectionBG"
     tools:ignore="HardCodedText">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -23,20 +25,34 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <ImageView
+        android:id="@+id/iv_title"
+        android:layout_width="200dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="110dp"
+        android:contentDescription="false"
+        android:src="@drawable/connection_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appbar_main" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_button_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/btn_disconnection"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/iv_title" />
 
     <Button
         android:id="@+id/btn_disconnection"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/selector_conn_edge"
         android:text="접속 종료"
+        android:textColor="@color/selector_disconnect_btn_text_color"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

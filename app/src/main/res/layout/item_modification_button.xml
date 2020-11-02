@@ -74,6 +74,7 @@
         android:layout_height="40dp"
         android:layout_marginStart="20dp"
         android:src="@drawable/delete_bin"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_mode"

@@ -7,29 +7,45 @@
     android:padding="30dp"
     tools:ignore="HardCodedText">
 
-    <Button
-        android:id="@+id/btn_button_setting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:text="버튼 Setting"
-        android:textAllCaps="false"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@id/btn_button_modification"
+    <ImageView
+        android:id="@+id/iv_setting_title"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:contentDescription="false"
+        android:src="@drawable/setting_title"
+        app:layout_constraintBottom_toTopOf="@id/btn_button_setting"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <Button
+        android:id="@+id/btn_button_setting"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/selector_conn_edge"
+        android:text="버튼 세팅"
+        android:textAllCaps="false"
+        android:textColor="@color/selector_disconnect_btn_text_color"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@id/btn_button_modification"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_setting_title" />
+
+    <Button
         android:id="@+id/btn_button_modification"
-        android:layout_width="match_parent"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
+        android:background="@drawable/selector_conn_edge"
         android:text="버튼 수정"
+        android:textColor="@color/selector_disconnect_btn_text_color"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
